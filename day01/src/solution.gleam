@@ -21,15 +21,68 @@ fn run(
     Ok(line) -> {
       let assert Ok(move) = int.parse(string.drop_start(line, 1))
       let #(newcurrent, zero_hits) = case string.first(line) {
-        Ok("R") -> rotate_r(current, move, count_zero_hits)
-        Ok("L") -> rotate_l(current, move, count_zero_hits)
+        Ok("R") -> rotate_rn(current, move, count_zero_hits)
+        Ok("L") -> rotate_ln(current, move, count_zero_hits)
         Ok(_) -> panic as { "Could not parse line" <> line }
         Error(_) -> panic as { "Could not parse line " <> line }
       }
 
-      run(list.drop(lines, 1), newcurrent, count + zero_hits, count_zero_hits)
+      io.println(
+        int.to_string(current)
+        <> " with "
+        <> line
+        <> " -> "
+        <> int.to_string(newcurrent)
+        <> " ("
+        <> int.to_string(zero_hits)
+        <> " zhs)",
+      )
+
+      case !count_zero_hits && newcurrent == 0 {
+        True ->
+          run(
+            list.drop(lines, 1),
+            newcurrent,
+            count + zero_hits + 1,
+            count_zero_hits,
+          )
+        False ->
+          run(
+            list.drop(lines, 1),
+            newcurrent,
+            count + zero_hits,
+            count_zero_hits,
+          )
+      }
     }
-    Error(_) -> count
+    Error(_) -> {
+      io.println("\n------\n")
+      count
+    }
+  }
+}
+
+fn rotate_ln(current: Int, move: Int, count_zero_hits: Bool) -> #(Int, Int) {
+  let new = current - { move % 100 }
+  let extra_hits = move / 100
+
+  case new < 0, count_zero_hits {
+    True, True -> #(100 + new, extra_hits + 1)
+    False, True -> #(new, extra_hits)
+    True, False -> #(100 + new, 0)
+    False, False -> #(new, 0)
+  }
+}
+
+fn rotate_rn(current: Int, move: Int, count_zero_hits: Bool) -> #(Int, Int) {
+  let new = current + { move % 100 }
+  let extra_hits = move / 100
+
+  case new > 99, count_zero_hits {
+    True, True -> #(new - 100, extra_hits + 1)
+    False, True -> #(new, extra_hits)
+    True, False -> #(new - 100, 0)
+    False, False -> #(new, 0)
   }
 }
 
