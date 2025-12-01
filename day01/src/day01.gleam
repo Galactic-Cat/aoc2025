@@ -7,7 +7,12 @@ import solution
 
 pub fn main() -> Nil {
   case argv.load().arguments {
-    [path] -> io.println(int.to_string(solution.solve(read(path))))
+    [path] -> {
+      let #(part1, part2) = solution.solve(read(path))
+
+      io.println(int.to_string(part1))
+      io.println(int.to_string(part2))
+    }
     _ -> io.println_error("Usage: day01 <path>")
   }
 }
