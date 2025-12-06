@@ -10,9 +10,9 @@ pub fn main() -> Nil {
   case argv.load().arguments {
     [path] -> {
       let #(ranges, ids) = read(path)
-      let #(part1, _part2) = solution.solve(ranges, ids)
+      let #(part1, part2) = solution.solve(ranges, ids)
       io.println(int.to_string(part1))
-      // io.println(int.to_string(part2))
+      io.println(int.to_string(part2))
     }
     _ -> io.println_error("Usage: day01 <path>")
   }
