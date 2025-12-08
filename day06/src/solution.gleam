@@ -20,12 +20,13 @@ pub type Operator {
   Multiply
 }
 
-pub fn solve(input: Grid(Column)) -> #(Int, Nil) {
-  #(
-    calculate(input)
-      |> int.sum(),
-    Nil,
-  )
+pub fn solve(input: Grid(Column)) -> Int {
+  calculate(input)
+  |> int.sum()
+}
+
+pub fn solve2(input: Grid(Column2)) -> Int {
+  todo
 }
 
 fn calculate(input: Grid(Column)) -> List(Int) {
@@ -63,6 +64,28 @@ fn unlift(input: List(Column)) -> List(Int) {
   })
 }
 
+fn get_groups(input: Grid(Column2), x: Int) -> List(#(Int, Int)) {
+  case grid.slice_column(input, x) {
+    Ok(col) ->
+      case empty_column(col) {
+        True -> get_groups(input, x + 1)
+        False -> {
+          let end = group_end(input, x)
+          [#(x, end), ..get_groups(input, x + 1)]
+        }
+      }
+    Error(_) -> []
+  }
+}
+
+fn empty_column(column: List(Column2)) -> Bool {
+  case list.first(column) {
+    Ok(Empty2) -> empty_column(list.drop(column, 1))
+    Ok(_) -> False
+    Error(Nil) -> True
+  }
+}
+
 fn get_operands(input: Grid(Column)) -> List(Operator) {
   let #(height, _width) = grid.size(input)
 
@@ -78,5 +101,16 @@ fn get_operands_row(input: Row(Column), x: Int) -> List(Operator) {
       panic as { "Found " <> int.to_string(z) <> " in operand row" }
     Ok(Op(o)) -> [o, ..get_operands_row(input, x + 1)]
     Error(_) -> []
+  }
+}
+
+fn group_end(grid: Grid(Column2), x: Int) -> Int {
+  case grid.slice_column(grid, x) {
+    Ok(col) ->
+      case empty_column(col) {
+        True -> x - 1
+        False -> group_end(grid, x + 1)
+      }
+    Error(_) -> x - 1
   }
 }

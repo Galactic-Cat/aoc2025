@@ -14,9 +14,8 @@ import solution.{
 pub fn main() -> Nil {
   case argv.load().arguments {
     [path] -> {
-      let #(part1, _part2) = solution.solve(read(path))
-      io.println(int.to_string(part1))
-      // io.println(int.to_string(part2))
+      io.println(int.to_string(solution.solve(read(path))))
+      io.println(int.to_string(solution.solve2(read2(path))))
     }
     _ -> io.println_error("Usage: day01 <path>")
   }
@@ -53,10 +52,25 @@ fn read2(path) -> Grid(Column2) {
   io.println("Reading2 file " <> path)
 
   case simplifile.read(path) {
-    Ok(data) -> {
-      string.split("\n")
-      |> list.map(fn(line) { string.split("") })
-    }
+    Ok(data) ->
+      {
+        string.split(data, "\n")
+        |> list.map(fn(line) { string.split(line, "") })
+      }
+      |> grid.create()
+      |> grid.map(fn(s) {
+        case s {
+          " " -> Empty2
+          "+" -> Add2
+          "*" -> Multiply2
+          _ ->
+            case int.parse(s) {
+              Ok(n) -> Number2(n)
+              Error(_) -> panic as { "Failed to parse " <> s }
+            }
+        }
+      })
+
     _ -> panic as { "Failed to read file " <> path }
   }
 }
