@@ -65,6 +65,7 @@ fn configure_helper(
     list.flat_map(states, fn(state) {
       list.map(buttons, fn(button) { update_joltage(state, button) })
     })
+    |> list.filter(fn(new_joltage) { potential_joltage(target, new_joltage) })
   case
     list.fold(update_list, False, fn(acc, update) {
       acc || match_joltage(target, update)
@@ -126,6 +127,26 @@ fn match_state_helper(alpha: State, beta: State, index: Int) -> Bool {
   case dict.get(alpha, index), dict.get(beta, index) {
     Ok(True), Ok(True) -> match_state_helper(alpha, beta, index + 1)
     Ok(False), Ok(False) -> match_state_helper(alpha, beta, index + 1)
+    Error(_), Error(_) -> True
+    _, _ -> False
+  }
+}
+
+fn potential_joltage(target: Joltage, current: Joltage) -> Bool {
+  potential_joltage_helper(target, current, 0)
+}
+
+fn potential_joltage_helper(
+  target: Joltage,
+  current: Joltage,
+  index: Int,
+) -> Bool {
+  case dict.get(target, index), dict.get(current, index) {
+    Ok(t), Ok(c) ->
+      case t >= c {
+        True -> potential_joltage_helper(target, current, index + 1)
+        False -> False
+      }
     Error(_), Error(_) -> True
     _, _ -> False
   }
